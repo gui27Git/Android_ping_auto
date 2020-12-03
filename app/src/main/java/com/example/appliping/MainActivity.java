@@ -16,9 +16,11 @@ import android.os.Handler;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Toast;
+import android.widget.Spinner;
+
 import com.stealthcopter.networktools.Ping;
 import com.stealthcopter.networktools.ping.PingResult;
 import java.io.File;
@@ -27,6 +29,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -37,27 +40,26 @@ public class MainActivity extends AppCompatActivity {
     private EditText E_Text_Ip = null;
     private EditText E_Text_TimeOut = null;
     private EditText E_Text_Delay = null;
-    private Date D_dateNow = null;
-    private FileOutputStream Fos_filePing = null;
     private Button B_Start = null;
     private Button B_Stop = null;
+    private Spinner S_listeAquisi=null;
+    private Date D_dateNow = null;
+    ArrayList<String>AL_listeAqui=new ArrayList<String>();
+    private FileOutputStream Fos_filePing = null;
     //initialisation des variables pour le timer
     private Timer T_timer = null;
     private TimerTask Tt_ping = null;
     Handler H_ping = new Handler();
 
     private LocationManager LM_locationManager=null;
-    private String S_coordonees=null;
+    private String St_coordonees=null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         //definition des variables aux components de l'apllication
         setContentView(R.layout.activity_main);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 123);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 123);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 123);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 123);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 123);
 
         LM_locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
         E_Text_Ip = (EditText) findViewById(R.id.EditAdresseIP);
@@ -65,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
         E_Text_Delay = (EditText) findViewById(R.id.editDelay);
         B_Start = (Button) findViewById(R.id.buttonStart);
         B_Stop = (Button) findViewById(R.id.buttonStop);
+        S_listeAquisi=(Spinner)findViewById(R.id.spinner_resultAcqui);
+
         //Ecouteur sur les button pour recuperate les event
         B_Start.setOnClickListener(EcouteurButton);
         B_Stop.setOnClickListener(EcouteurButton);
@@ -101,15 +105,16 @@ public class MainActivity extends AppCompatActivity {
     public void StartAcquisition() {
         E_Text_Ip.setEnabled(false);
         E_Text_TimeOut.setEnabled(false);
+        E_Text_Delay.setEnabled(false);
         B_Start.setEnabled(false);
         B_Stop.setEnabled(true);
 
-        D_dateNow = new Date();
+        D_dateNow = new Date();     //initialisation du format d'horodatage
         SimpleDateFormat Sdf_Formatdate = new SimpleDateFormat("YYYY_MM_dd_HH_mm_ss");
         String S_FormatdateNow = Sdf_Formatdate.format(D_dateNow);
         initFile(S_FormatdateNow);
 
-        GetCordonnees();
+        GetCordonnees();        //fonction qui récupere les données GPS
 
         T_timer = new Timer();            //initialisation du timer
         initializeTimerTask();          //initialisation du timerTask
@@ -131,8 +136,10 @@ public class MainActivity extends AppCompatActivity {
         //Reinitialisation de la page
         E_Text_Ip.setEnabled(true);
         E_Text_TimeOut.setEnabled(true);
+        E_Text_Delay.setEnabled(true);
         E_Text_Ip.getText().clear();
         E_Text_TimeOut.getText().clear();
+        E_Text_Delay.getText().clear();
         B_Start.setEnabled(true);
         B_Stop.setEnabled(false);
 
@@ -159,12 +166,13 @@ public class MainActivity extends AppCompatActivity {
                             Log.i("début", "début du ping= " + compteurPing);     //écriture dans la console
                             PingResult pingResult = Ping.onAddress(E_Text_Ip.getText().toString()).setTimeOutMillis(Integer.parseInt(E_Text_TimeOut.getText().toString())).doPing(); //ping effécué a l'adresse IP et avec le timeOut
                             if (pingResult.isReachable() == true) {     //Si le ping est effctué
-                                Toast.makeText(MainActivity.this, "ping réussi ", Toast.LENGTH_SHORT).show();
+                               // Toast.makeText(MainActivity.this, "ping réussi ", Toast.LENGTH_SHORT).show();
+                                Log.d("ping", "Reussite du ping N°"+compteurPing);
                             } else {  //si le ping n'a pas abouti
-                                Toast toast = Toast.makeText(MainActivity.this, "connxion échoué , le timeOut est dépassé " + pingResult.getError(), Toast.LENGTH_SHORT);
-                                toast.show();
+                                //Toast.makeText(MainActivity.this, "connxion échoué , le timeOut est dépassé " + pingResult.getError(), Toast.LENGTH_SHORT).show();
+                                Log.d("ping", "Echec du ping N°"+compteurPing);
                             }
-                            EcritureCSV(pingResult.getTimeTaken());
+                            Ecriture_acquisition(pingResult.getTimeTaken());
                         } catch (UnknownHostException e) {
                             e.printStackTrace();
                         }
@@ -210,13 +218,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Fonction qui écrit les donnée dans le fichier
-    public void EcritureCSV(Float tempsPing) {
+    public void Ecriture_acquisition(Float tempsPing) {
+        Date now = new Date();          //Date
+        SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss");
+        String date = formatDate.format(now);
+
+        AL_listeAqui.add(date+";"+tempsPing+";"+St_coordonees+"\n");
+        S_listeAquisi.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.support_simple_spinner_dropdown_item,AL_listeAqui));
+        
         if (isExternalStorageWritable() == true) {
             try {
-                Date now = new Date();          //Date
-                SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss");
-                String date = formatDate.format(now);
-                Fos_filePing.write(new String(date + ";" + tempsPing + "ms"+";"+S_coordonees+"\n").getBytes());
+                Log.d("Aquisition", "Ecriture CSV en cours...");
+                
+                Fos_filePing.write(new String(date + ";" + tempsPing + "ms"+";"+St_coordonees+"\n").getBytes());
             } catch (IOException e) {
                 System.out.println(e);
             }
@@ -229,13 +243,15 @@ public class MainActivity extends AppCompatActivity {
             StopAcquisition();
         }
     }
-
+    
+        //fonction qui recupere les données GPS actuel
     public void GetCordonnees(){
+        Log.d("Aquisition", "Récupération des données GPS");
        LocationProvider LP_fournisseur = LM_locationManager.getProvider("gps");
         if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
 
          Location L_localisation = LM_locationManager.getLastKnownLocation(LP_fournisseur.getName());
-             S_coordonees = String.format("L'altitude :%f -longitude : %f \n", L_localisation.getAltitude(), L_localisation.getLongitude());
+             St_coordonees = String.format("-%f -%f\n", L_localisation.getAltitude(), L_localisation.getLongitude());
 
         }
     }
