@@ -1,15 +1,15 @@
 package com.example.appliping;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
-import android.location.LocationProvider;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -20,7 +20,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
-
 import com.stealthcopter.networktools.Ping;
 import com.stealthcopter.networktools.ping.PingResult;
 import java.io.File;
@@ -52,6 +51,7 @@ public class MainActivity extends AppCompatActivity {
     Handler H_ping = new Handler();
 
     private LocationManager LM_locationManager=null;
+    private LocationListener LL_listenerGPS=null;
     private String St_coordonees=null;
 
     @Override
@@ -133,6 +133,7 @@ public class MainActivity extends AppCompatActivity {
             Tt_ping.cancel();    //annuler timerTask
             Tt_ping = null;        //timerTask reinitialised
         }
+        LM_locationManager.removeUpdates(LL_listenerGPS);
         //Reinitialisation de la page
         E_Text_Ip.setEnabled(true);
         E_Text_TimeOut.setEnabled(true);
@@ -245,15 +246,32 @@ public class MainActivity extends AppCompatActivity {
     }
     
         //fonction qui recupere les données GPS actuel
-    public void GetCordonnees(){
+    public void GetCordonnees() {
         Log.d("Aquisition", "Récupération des données GPS");
-       LocationProvider LP_fournisseur = LM_locationManager.getProvider("gps");
-        if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+        try {
+            try {
+                LM_locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, LL_listenerGPS= new LocationListener()
+                {
+                    @Override
+                    public void onLocationChanged(@NonNull Location location) {
+                         St_coordonees = String.format( location.getLatitude()+","+ location.getLongitude());
+                    }
 
-         Location L_localisation = LM_locationManager.getLastKnownLocation(LP_fournisseur.getName());
-             St_coordonees = String.format("-%f -%f\n", L_localisation.getAltitude(), L_localisation.getLongitude());
+                    @Override
+                    public void onProviderDisabled(@NonNull String provider) {
+                        StopAcquisition();
+                    }
+
+                });
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
+        catch (SecurityException ex){
+            ex.printStackTrace();
+        }
+
     }
 }
 
