@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import android.Manifest;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     private Button B_Stop = null;
     private Spinner S_listeAquisi=null;
     private Date D_dateNow = null;
-    ArrayList<String>AL_listeAqui=new ArrayList<String>();
+    ArrayList<String>AL_listeAqui=null;
     private FileOutputStream Fos_filePing = null;
     //initialisation des variables pour le timer
     private Timer T_timer = null;
@@ -57,11 +58,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //definition des variables aux components de l'apllication
+        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         setContentView(R.layout.activity_main);
+        //Demande a l'utilisateur la permission aux accès GPS et fichier
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 123);
 
-        LM_locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        LM_locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);  //recuperation du systeme de localisation de l'appareil
+        //definition des variables aux components de l'aplication
         E_Text_Ip = (EditText) findViewById(R.id.EditAdresseIP);
         E_Text_TimeOut = (EditText) findViewById(R.id.editTimeOut);
         E_Text_Delay = (EditText) findViewById(R.id.editDelay);
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         B_Stop = (Button) findViewById(R.id.buttonStop);
         S_listeAquisi=(Spinner)findViewById(R.id.spinner_resultAcqui);
 
-        //Ecouteur sur les button pour recuperate les event
+        //Ecouteur sur les button pour recuperer les evenement
         B_Start.setOnClickListener(EcouteurButton);
         B_Stop.setOnClickListener(EcouteurButton);
 
@@ -90,7 +93,11 @@ public class MainActivity extends AppCompatActivity {
             } else if (TextUtils.isEmpty(E_Text_TimeOut.getText().toString()) == true) { //si le champ de text du timeOut est vide
                 E_Text_TimeOut.setHintTextColor(Color.RED); //Afficher un placeholder rouge
                 E_Text_TimeOut.setHint("TimeOut n'est pas saisi");
-            } else { //Sinon on regarde l'état des bouton
+            } else if(TextUtils.isEmpty(E_Text_Delay.getText().toString())==true){  //si le champ de texte du delay est vide
+                E_Text_Delay.setHintTextColor(Color.RED); //afficher un placeholder rouge
+                E_Text_Delay.setHint("Le delay n'est pas saisi");
+            }
+            else { //Sinon on regarde l'état des bouton
                 if (B_Stop.isPressed() == true) {    //si le bouton stop est pressé on lance la fonction StopAcquisition
                     StopAcquisition();
                 } else if (B_Start.isPressed() == true) {    //si le bouton start est pressé on lance la fonction StartAcquisition
@@ -108,6 +115,7 @@ public class MainActivity extends AppCompatActivity {
         E_Text_Delay.setEnabled(false);
         B_Start.setEnabled(false);
         B_Stop.setEnabled(true);
+        AL_listeAqui=new ArrayList<>();
 
         D_dateNow = new Date();     //initialisation du format d'horodatage
         SimpleDateFormat Sdf_Formatdate = new SimpleDateFormat("YYYY_MM_dd_HH_mm_ss");
@@ -144,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
         B_Start.setEnabled(true);
         B_Stop.setEnabled(false);
 
+
         try {
             Fos_filePing.close(); //Fermeture du fichier
         } catch (IOException e) {
@@ -170,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
                                // Toast.makeText(MainActivity.this, "ping réussi ", Toast.LENGTH_SHORT).show();
                                 Log.d("ping", "Reussite du ping N°"+compteurPing);
                             } else {  //si le ping n'a pas abouti
-                                StopAcquisition();
+
                                 //Toast.makeText(MainActivity.this, "connxion échoué , le timeOut est dépassé " + pingResult.getError(), Toast.LENGTH_SHORT).show();
                                 Log.d("ping", "Echec du ping N°"+compteurPing);
                             }
