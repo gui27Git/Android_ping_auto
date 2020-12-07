@@ -118,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
 
         T_timer = new Timer();            //initialisation du timer
         initializeTimerTask();          //initialisation du timerTask
-        T_timer.schedule(Tt_ping, 1000, Integer.parseInt(E_Text_Delay.getText().toString()));
+        T_timer.schedule(Tt_ping, 3000, Integer.parseInt(E_Text_Delay.getText().toString()));
 
 
     }
@@ -170,10 +170,11 @@ public class MainActivity extends AppCompatActivity {
                                // Toast.makeText(MainActivity.this, "ping réussi ", Toast.LENGTH_SHORT).show();
                                 Log.d("ping", "Reussite du ping N°"+compteurPing);
                             } else {  //si le ping n'a pas abouti
+                                StopAcquisition();
                                 //Toast.makeText(MainActivity.this, "connxion échoué , le timeOut est dépassé " + pingResult.getError(), Toast.LENGTH_SHORT).show();
                                 Log.d("ping", "Echec du ping N°"+compteurPing);
                             }
-                            Ecriture_acquisition(pingResult.getTimeTaken());
+                            Ecriture_acquisition(compteurPing,pingResult.getTimeTaken());
                         } catch (UnknownHostException e) {
                             e.printStackTrace();
                         }
@@ -219,12 +220,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Fonction qui écrit les donnée dans le fichier
-    public void Ecriture_acquisition(Float tempsPing) {
+    public void Ecriture_acquisition(int nombPing,Float tempsPing) {
         Date now = new Date();          //Date
         SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/YYYY HH:mm:ss");
         String date = formatDate.format(now);
 
-        AL_listeAqui.add(date+";"+tempsPing+";"+St_coordonees+"\n");
+        AL_listeAqui.add(nombPing+";"+date+";"+tempsPing+"ms;"+St_coordonees+"\n");
         S_listeAquisi.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.support_simple_spinner_dropdown_item,AL_listeAqui));
         
         if (isExternalStorageWritable() == true) {
