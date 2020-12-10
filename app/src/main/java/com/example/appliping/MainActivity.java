@@ -1,3 +1,13 @@
+/*
+Last modification:10/12/2020 15:10
+By Guillaume Levasseur and Matisse Dimier
+Android application for measuring internet connectivity in GSM data or wifi.
+It must be able to retrieve and write internet and GPS data to a file.
+for use of the application ,read the readme on Github.
+
+
+
+*/
 package com.example.appliping;
 
 import androidx.annotation.NonNull;
@@ -11,6 +21,7 @@ import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.net.InetAddresses;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -50,10 +61,16 @@ public class MainActivity extends AppCompatActivity {
     private Timer T_timer = null;
     private TimerTask Tt_ping = null;
     private Handler H_ping = new Handler();
-
+        //localisation
     private LocationManager LM_locationManager=null;
     private LocationListener LL_listenerGPS=null;
     private String St_coordinate=null;
+      //send mail
+    EditText E_Text_EmailSender;
+    EditText E_Text_PasswordSender;
+    EditText E_Text_receiverMail;
+    Button B_SendMail;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,16 +89,20 @@ public class MainActivity extends AppCompatActivity {
         B_Stop = (Button) findViewById(R.id.buttonStop);
         S_list_Acquisition=(Spinner)findViewById(R.id.spinner_resultAcqui);
 
+        //Definition variables send mail
+        E_Text_EmailSender=(EditText)findViewById(R.id.Email);
+        E_Text_PasswordSender=(EditText)findViewById(R.id.Password);
+        E_Text_receiverMail=(EditText)findViewById(R.id.receiverEmail);
+        B_SendMail=(Button) findViewById(R.id.ButtonSendMail);
+
         //Listener on button
         B_Start.setOnClickListener(ListenerButton);
         B_Stop.setOnClickListener(ListenerButton);
+        B_SendMail.setOnClickListener(EcouteurButton2);
 
 
     }
-
-    /*
-    Function Listener for the event
-     */
+    //Function Listener for the event
     public View.OnClickListener ListenerButton = new View.OnClickListener() {
         //Event click
         @Override
@@ -89,7 +110,12 @@ public class MainActivity extends AppCompatActivity {
             if (TextUtils.isEmpty(E_Text_Ip.getText().toString()) == true) { // if E_Text_ip is empty
                 E_Text_Ip.setHintTextColor(Color.RED);  //display placeholder red
                 E_Text_Ip.setHint("IP n'est pas saisi");
-            } else if (TextUtils.isEmpty(E_Text_TimeOut.getText().toString()) == true) { //if E_Text_TimeOut is empty
+            }else if(InetAddresses.isNumericAddress(E_Text_Ip.getText().toString())==false){  //if E_text_IP isn't a numeric address
+                E_Text_Ip.getText().clear();                    //erase text of E_text_IP
+                E_Text_Ip.setHintTextColor(Color.RED);          //display placeholder red
+                E_Text_Ip.setHint("L'adresse IP est mal saisi");
+            }
+            else if (TextUtils.isEmpty(E_Text_TimeOut.getText().toString()) == true) { //if E_Text_TimeOut is empty
                 E_Text_TimeOut.setHintTextColor(Color.RED); //display placeholder red
                 E_Text_TimeOut.setHint("TimeOut n'est pas saisi");
             } else if(TextUtils.isEmpty(E_Text_Delay.getText().toString())==true){  //if E_Text_Delay is empty
@@ -107,6 +133,12 @@ public class MainActivity extends AppCompatActivity {
             }
         }
 
+    };
+    public View.OnClickListener EcouteurButton2=new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            sendEmail(E_Text_EmailSender.getText().toString(),E_Text_PasswordSender.getText().toString(),E_Text_receiverMail.getText().toString());
+        }
     };
 
     //  Function StartAcquisition
@@ -279,6 +311,35 @@ public class MainActivity extends AppCompatActivity {
             ex.printStackTrace();
         }
 
+    }
+    //function send mail
+    private void sendEmail(final String Sender,final String Password,final String Receiver)
+    {
+
+        new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    GMailSender sender = new GMailSender(Sender,Password);
+                    sender.sendMail("Relevé", "<b>"+"attente"+"</b>", Sender, Receiver);
+                    makeAlert();
+
+                } catch (Exception e) {
+                    Log.e("SendMail", e.getMessage(), e);
+                }
+            }
+
+        }).start();
+    }
+
+    //alert the user that the mail is sender
+    private void makeAlert(){
+        this.runOnUiThread(new Runnable() {
+            public void run() {
+                Toast.makeText(MainActivity.this, "Mail Sent", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }
 

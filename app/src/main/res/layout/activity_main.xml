@@ -7,6 +7,23 @@
     android:screenOrientation="portrait"
     tools:context=".MainActivity">
 
+    <Button
+        android:id="@+id/ButtonSendMail"
+        android:layout_width="166dp"
+        android:layout_height="47dp"
+        android:layout_marginStart="107dp"
+        android:layout_marginLeft="107dp"
+        android:layout_marginTop="49dp"
+        android:layout_marginEnd="138dp"
+        android:layout_marginRight="138dp"
+        android:layout_marginBottom="54dp"
+        android:text="envoyer mail"
+        app:backgroundTint="#9A878D"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/Password" />
+
     <EditText
         android:id="@+id/editDelay"
         android:layout_width="wrap_content"
@@ -124,5 +141,39 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/buttonStop" />
+
+    <EditText
+        android:id="@+id/Email"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:hint="mon adresse mail"
+        android:inputType="textEmailAddress"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/spinner_resultAcqui"
+        tools:ignore="MissingConstraints" />
+
+
+    <EditText
+        android:id="@+id/Password"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:hint="mot de passe "
+        android:inputType="textPassword"
+        app:layout_constraintTop_toBottomOf="@+id/receiverEmail"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp" />
+
+    <EditText
+        android:id="@+id/receiverEmail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:hint="Adresse mail du receveur"
+        android:inputType="textEmailAddress"
+        app:layout_constraintTop_toBottomOf="@+id/Email"
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
