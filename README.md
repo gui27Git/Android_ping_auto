@@ -34,3 +34,5 @@ Avant tous assurez vous que vos adresses mail soit autorisé a envoyé des mails
 Librairie Java mail : https://github.com/hamza-ameer/JavaMailApiAndroid/tree/Updated
 
 Doc timer : https://myaccount.google.com/u/2/lesssecureapps
+
+Doc Date : https://developer.android.com/reference/java/util/Date
