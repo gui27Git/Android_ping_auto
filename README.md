@@ -13,11 +13,21 @@
 
 Avant tous assurez vous que vos adresses mail soit autorisé a envoyé des mails dans les applications tierce : https://myaccount.google.com/u/2/lesssecureapps
 
+#### Partie ping
   - 1 : Ouvrir l'application
   - 2 : Saisir l'adresse ip ,le timeout et le delay voulu et appuyez sur Start
   - 3 : Possibilité de voir les resultat dans la liste en dessous
   - 4 : Stoppez 
   - 5 : Le fichier en .txt est crée ( sur android : fichier -> Stockage interne -> Android -> data -> com.example.appliping -> files)
+  
+#### Partie mail
+
+- 1 : Entrez votre adresses mail et votre mot de passe (L'adresse de l'envoyeur)
+- 2 : Entrez l'autre adresse mail (l'adresse de reception)
+- 3 : Envoyer le mail
+- ATTENTION L'envoi du fichier text non fonctionnel. Mais le mail s'envoi avec un peu de delai (Un mail vide)
+  
+  
 
 ## Liens
 
