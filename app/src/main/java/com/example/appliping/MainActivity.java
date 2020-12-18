@@ -178,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
         B_Start.setEnabled(true);
         B_Stop.setEnabled(false);
         EditText_list_Acquisition.getText().clear();
+        St_Resultat_IHM=null;
         B_Mail.setEnabled(true);
 
         try {
